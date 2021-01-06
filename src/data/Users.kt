@@ -1,4 +1,4 @@
-package com.olabode.wilson.repository
+package com.olabode.wilson.data
 import org.jetbrains.exposed.sql.Column
 import org.jetbrains.exposed.sql.Table
 

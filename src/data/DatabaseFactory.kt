@@ -1,4 +1,4 @@
-package com.olabode.wilson.repository
+package com.olabode.wilson.data
 
 import com.zaxxer.hikari.HikariConfig
 import com.zaxxer.hikari.HikariDataSource
