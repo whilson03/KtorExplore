@@ -5,6 +5,7 @@ import com.olabode.wilson.auth.MySession
 import com.olabode.wilson.auth.hash
 import com.olabode.wilson.data.DatabaseFactory
 import com.olabode.wilson.repository.TodoRepositoryImpl
+import com.olabode.wilson.routes.todos
 import com.olabode.wilson.routes.users
 import io.ktor.application.*
 import io.ktor.response.*
@@ -63,6 +64,7 @@ fun Application.module(testing: Boolean = false) {
 
     routing {
         users(db, jwtService, hashFunction)
+        todos(db)
     }
 }
 
