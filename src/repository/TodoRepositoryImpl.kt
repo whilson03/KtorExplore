@@ -7,7 +7,9 @@ import com.olabode.wilson.models.Todo
 import com.olabode.wilson.models.User
 import com.olabode.wilson.repository.Helpers.rowToTodo
 import com.olabode.wilson.repository.Helpers.rowToUser
+import org.jetbrains.exposed.sql.SqlExpressionBuilder.eq
 import org.jetbrains.exposed.sql.and
+import org.jetbrains.exposed.sql.deleteWhere
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.InsertStatement
@@ -71,6 +73,14 @@ class TodoRepositoryImpl : Repository {
             Todos.select {
                 Todos.id.eq((todoId))
             }.map { rowToTodo(it) }.singleOrNull()
+        }
+    }
+
+    override suspend fun deleteTodo(userId: Int, todoId: Int) {
+        return dbQuery {
+            Todos.deleteWhere() {
+                (Todos.id eq todoId) and (Todos.userId eq userId)
+            }
         }
     }
 }

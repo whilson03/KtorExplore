@@ -14,7 +14,9 @@ import io.ktor.http.Parameters
 import io.ktor.locations.*
 import io.ktor.request.receive
 import io.ktor.response.respond
+import io.ktor.response.respondText
 import io.ktor.routing.Route
+import io.ktor.routing.delete
 import io.ktor.routing.patch
 import io.ktor.sessions.get
 import io.ktor.sessions.sessions
@@ -69,7 +71,6 @@ fun Route.todos(db: Repository) {
             }
         }
 
-
         get<TodoRoute> {
             val user = call.sessions.get<MySession>()?.let { db.findUser(it.userId) }
             if (user == null) {
@@ -85,10 +86,10 @@ fun Route.todos(db: Repository) {
             }
         }
 
-        patch<TodoRoute.Update> { it ->
+        patch<TodoRoute.Update> { updateRoute ->
             val todosParameters = call.receive<Parameters>()
 
-            val id = it.id ?: return@patch call.respond(
+            val id = updateRoute.id ?: return@patch call.respond(
                 HttpStatusCode.BadRequest, "Missing id"
             )
             val todo = todosParameters["todo"]
@@ -116,7 +117,32 @@ fun Route.todos(db: Repository) {
                 }
             } catch (e: Throwable) {
                 application.log.error("Failed to update todo", e)
-                call.respond(HttpStatusCode.BadRequest, "Problems Saving Todo")
+                call.respond(HttpStatusCode.BadRequest, "Problems Updating Todo")
+            }
+        }
+
+        delete<TodoRoute.Delete> { deleteRoute ->
+
+            val id = deleteRoute.id ?: return@delete call.respond(
+                HttpStatusCode.BadRequest, "Missing id"
+            )
+
+            val user = call.sessions.get<MySession>()?.let {
+                db.findUser(it.userId)
+            }
+            if (user == null) {
+                call.respond(
+                    HttpStatusCode.BadRequest, "Problems retrieving User"
+                )
+                return@delete
+            }
+
+            try {
+                db.deleteTodo(user.userId, id)
+                call.respondText(status = HttpStatusCode.OK, text = "Deleted Successfully")
+            } catch (e: Throwable) {
+                application.log.error("Failed to Delete todo", e)
+                call.respond(HttpStatusCode.BadRequest, "Problems Deleting Todo")
             }
         }
     }
