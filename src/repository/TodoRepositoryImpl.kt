@@ -7,9 +7,11 @@ import com.olabode.wilson.models.Todo
 import com.olabode.wilson.models.User
 import com.olabode.wilson.repository.Helpers.rowToTodo
 import com.olabode.wilson.repository.Helpers.rowToUser
+import org.jetbrains.exposed.sql.and
 import org.jetbrains.exposed.sql.insert
 import org.jetbrains.exposed.sql.select
 import org.jetbrains.exposed.sql.statements.InsertStatement
+import org.jetbrains.exposed.sql.update
 
 /** CREATED BY wilson ON 06  Jan 2021 @ 12:53 pm */
 
@@ -56,6 +58,19 @@ class TodoRepositoryImpl : Repository {
             Todos.select {
                 Todos.userId.eq((userId))
             }.mapNotNull { rowToTodo(it) }
+        }
+    }
+
+    override suspend fun updateTodo(userId: Int, todoId: Int, todo: String, done: Boolean): Todo? {
+        return dbQuery {
+            Todos.update({ (Todos.id eq todoId) and (Todos.userId eq userId) }) {
+                it[Todos.todo] = todo
+                it[Todos.done] = done
+            }
+
+            Todos.select {
+                Todos.id.eq((todoId))
+            }.map { rowToTodo(it) }.singleOrNull()
         }
     }
 }
