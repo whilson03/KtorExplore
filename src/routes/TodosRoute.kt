@@ -22,15 +22,17 @@ import io.ktor.sessions.sessions
 /** CREATED BY wilson ON 06  Jan 2021 @ 3:00 pm */
 
 const val TODOS = "$API_VERSION/todos"
-const val TODOS_UPDATE = "$TODOS/{id}"
 
 @KtorExperimentalLocationsAPI
 @Location(TODOS)
-class TodoRoute
+class TodoRoute {
 
-@KtorExperimentalLocationsAPI
-@Location(TODOS_UPDATE)
-data class TodoUpdateRoute(val id: Int?)
+    @Location("/{id}")
+    data class Update(val parent: TodoRoute, val id: Int?)
+
+    @Location("/{id}")
+    data class Delete(val parent: TodoRoute, val id: Int?)
+}
 
 @KtorExperimentalLocationsAPI
 fun Route.todos(db: Repository) {
@@ -83,9 +85,8 @@ fun Route.todos(db: Repository) {
             }
         }
 
-        patch<TodoUpdateRoute> { it ->
+        patch<TodoRoute.Update> { it ->
             val todosParameters = call.receive<Parameters>()
-
 
             val id = it.id ?: return@patch call.respond(
                 HttpStatusCode.BadRequest, "Missing id"
@@ -108,7 +109,7 @@ fun Route.todos(db: Repository) {
 
             try {
                 val currentTodo = db.updateTodo(
-                    user.userId, id.toInt(), todo, done.toBoolean()
+                    user.userId, id, todo, done.toBoolean()
                 )
                 currentTodo?.id?.let {
                     call.respond(HttpStatusCode.OK, currentTodo)
